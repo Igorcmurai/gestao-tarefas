@@ -1,16 +1,67 @@
-# React + Vite
+# gestao-tarefas
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicação de gestão de tarefas feita em **React + Vite**.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Como rodar o projeto no seu computador
 
-## React Compiler
+### **1. Baixe o projeto**
+- Clique em **Code → Download ZIP**
+- Extraia o ZIP em uma pasta do seu computador
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+### **2. Abra o projeto no VS Code**
+- Abra o VS Code  
+- Vá em **File → Open Folder**  
+- Escolha a pasta **gestao-tarefas**
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+### **3. Abra o terminal**
+No VS Code:  
+**Terminal → New Terminal**
+
+---
+
+### **4. Instale as dependências**
+Execute no terminal:
+
+npm install
+
+---
+
+### **5. Inicie o projeto**
+Execute:
+
+npm run dev
+
+O terminal mostrará um endereço como:
+
+http://localhost:5173
+
+
+Abra esse link no navegador.
+
+---
+
+## 🔐 Login de teste
+- **Usuário:** igorcmurai — **Senha:** igor123  
+- **Usuário:** gustavocmurai — **Senha:** gustavo123
+
+---
+
+## 📁 Estrutura do projeto
+- **src/pages** — Telas (Login, Home, Criar, Editar, Detalhes)  
+- **src/services** — Lógica das tarefas  
+- **public** — Favicon e arquivos estáticos  
+- **index.html** — Título e ícone do site  
+
+---
+
+## ✔ Pronto
+Agora você pode testar todo o sistema: criar tarefas, editar, excluir, filtrar e visualizar detalhes.
+
+
+
