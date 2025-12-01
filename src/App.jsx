@@ -11,26 +11,28 @@ import { logout, getUser } from './services/tasksService'
 function Header() {
   const nav = useNavigate()
   const user = getUser()
+  const location = useLocation()
+
+  const hidingAuthLinks =
+    location.pathname === '/login' || location.pathname === '/register'
+
   return (
     <header className="header">
-      <div className="header-left">{/* espaço para logo, opcional */}</div>
+      <div className="header-left"></div>
       <div className="header-right">
         {user ? (
           <>
             <span className="user">{user}</span>
-            <button
-              onClick={() => { logout(); nav('/login') }}
-              className="btn-logout"
-            >
+            <button className="btn-logout" onClick={() => { logout(); nav('/login') }}>
               Log out
             </button>
           </>
-        ) : (
+        ) : !hidingAuthLinks ? (
           <>
             <Link to="/login" className="btn ghost">Login</Link>
             <Link to="/register" className="btn ghost">Cadastro</Link>
           </>
-        )}
+        ) : null}
       </div>
     </header>
   )
@@ -41,18 +43,18 @@ export default function App() {
   const nav = useNavigate()
 
   React.useEffect(() => {
-    // Força limpeza de sessão e garante que a rota inicial seja /login
-    logout()
+    // força iniciar no login
     if (location.pathname !== '/login' && location.pathname !== '/register') {
       nav('/login')
     }
-    // executar apenas no primeiro mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line
   }, [])
 
   return (
     <div className="app">
+
       <Header />
+
       <main className="container">
         <Routes>
           <Route path="/" element={<Home />} />
@@ -63,6 +65,26 @@ export default function App() {
           <Route path="/register" element={<Register />} />
         </Routes>
       </main>
+
+      {/* RODAPÉ */}
+      <footer style={{
+        textAlign: 'center',
+        padding: '20px 0',
+        marginTop: '40px',
+        color: '#6b7280',
+        fontSize: '14px'
+      }}>
+        Desenvolvido por
+        <a
+          href="https://github.com/Igorcmurai"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: '#2563eb', marginLeft: 6, textDecoration: 'underline' }}
+        >
+          Igor C. Murai
+        </a>
+      </footer>
+
     </div>
   )
 }
