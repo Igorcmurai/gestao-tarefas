@@ -1,114 +1,164 @@
-import React, { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { listTasks, removeTask, seedSampleIfEmpty } from '../services/tasksService'
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { getTasks, removeTask, getUser } from "../services/tasksService";
 
 export default function Home() {
-  const nav = useNavigate()
-  const [tasks, setTasks] = useState([])
-  const [query, setQuery] = useState('')
-  const [filter, setFilter] = useState('') // '' = todos
-
-  useEffect(() => {
-    seedSampleIfEmpty()
-    load()
-  }, [])
+  const [tasks, setTasks] = useState([]);
+  const [statusFilter, setStatusFilter] = useState("Todos status");
+  const [search, setSearch] = useState("");
+  const nav = useNavigate();
 
   function load() {
-    setTasks(listTasks())
+    const list = getTasks() || [];
+    setTasks(list);
   }
+
+  useEffect(() => {
+    load();
+    const user = getUser();
+    if (!user) nav("/login");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function handleDelete(id) {
-    if (!confirm('Deletar tarefa?')) return
-    removeTask(id)
-    load()
+    if (!confirm("Confirma excluir essa tarefa?")) return;
+    removeTask(id);
+    load();
   }
 
-  const filtered = tasks.filter(t => {
-    if (filter && t.status !== filter) return false
-    if (!query) return true
-    const q = query.toLowerCase()
-    return (t.title || '').toLowerCase().includes(q)
-        || (t.responsible || '').toLowerCase().includes(q)
-  })
+  function filtered() {
+    return tasks.filter((t) => {
+      if (statusFilter !== "Todos status" && t.status !== statusFilter) {
+        return false;
+      }
+      const q = search.trim().toLowerCase();
+      if (!q) return true;
+      return (
+        (t.title || "").toLowerCase().includes(q) ||
+        (t.responsible || "").toLowerCase().includes(q)
+      );
+    });
+  }
+
+  function formatDates(t) {
+    const created = t.createdAt ? new Date(t.createdAt).toLocaleDateString() : "-";
+    const concluded = t.concludedAt ? new Date(t.concludedAt).toLocaleDateString() : null;
+    return concluded ? `${created} • ${concluded}` : created;
+  }
+
+  // estilo inline para o botão delete (vermelho escuro)
+  const deleteBtnStyle = {
+    background: "#6f1d1d",
+    color: "#fff",
+    border: "none",
+    padding: "8px 12px",
+    borderRadius: 6,
+    cursor: "pointer",
+    boxShadow: "0 4px 8px rgba(0,0,0,0.15)"
+  };
 
   return (
-    <div>
-      <div className="top-actions">
-        <div className="top-left">
-          <select value={filter} onChange={e => setFilter(e.target.value)}>
-            <option value=''>Todos status</option>
-            <option value='Pendente'>Pendente</option>
-            <option value='Em andamento'>Em andamento</option>
-            <option value='Finalizado'>Finalizado</option>
-          </select>
-        </div>
+    <div style={{ padding: 28 }}>
+      <div style={{ display: "flex", gap: 12, alignItems: "center", maxWidth: 1100, margin: "0 auto 18px" }}>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          style={{ padding: "10px 12px", borderRadius: 6, flex: "0 0 220px" }}
+        >
+          <option>Todos status</option>
+          <option>Pendente</option>
+          <option>Em andamento</option>
+          <option>Finalizado</option>
+        </select>
 
-        <div className="top-center">
-          <input
-            placeholder="Buscar por título ou responsável"
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-          />
-        </div>
+        <input
+          placeholder="Buscar por título ou responsável"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{ padding: "10px 12px", borderRadius: 6, flex: 1 }}
+        />
 
-        <div className="top-right">
-          <button onClick={() => { setFilter(''); setQuery('') }} className="btn ghost">
+        <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+          <button
+            onClick={() => { setStatusFilter("Todos status"); setSearch(""); }}
+            className="btn ghost"
+            type="button"
+          >
             Limpar Filtro
           </button>
-          <button onClick={() => nav('/create')} className="btn primary">
+
+          <button
+            onClick={() => nav("/create")}
+            className="btn primary"
+            type="button"
+          >
             Criar Tarefa
           </button>
         </div>
       </div>
 
-      <div className="grid header-grid">
-        <div>ID</div>
-        <div>Título</div>
-        <div>Responsável</div>
-        <div>Status</div>
-        <div>Datas</div>
-        <div>Ações</div>
+      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ textAlign: "left", color: "#374151" }}>
+              <th style={{ padding: "12px 16px", width: 60 }}>ID</th>
+              <th style={{ padding: "12px 16px" }}>Título</th>
+              <th style={{ padding: "12px 16px", width: 180 }}>Responsável</th>
+              <th style={{ padding: "12px 16px", width: 150 }}>Status</th>
+              <th style={{ padding: "12px 16px", width: 200 }}>Datas</th>
+              <th style={{ padding: "12px 16px", width: 160 }}>Ações</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {filtered().map((t) => (
+              <tr key={t.id} style={{ background: "#fff", borderRadius: 8, marginBottom: 12 }}>
+                <td style={{ padding: "18px 16px", verticalAlign: "top" }}>{t.id}</td>
+
+                {/* Apenas o título com link para detalhes — sem descrição na lista */}
+                <td style={{ padding: "18px 16px", verticalAlign: "top" }}>
+                  <div>
+                    <Link to={`/details/${t.id}`} style={{ color: "#1b4ed8", textDecoration: "underline" }}>
+                      {t.title}
+                    </Link>
+                  </div>
+                </td>
+
+                <td style={{ padding: "18px 16px", verticalAlign: "top" }}>{t.responsible}</td>
+                <td style={{ padding: "18px 16px", verticalAlign: "top" }}>{t.status}</td>
+                <td style={{ padding: "18px 16px", verticalAlign: "top" }}>{formatDates(t)}</td>
+
+                <td style={{ padding: "18px 16px", verticalAlign: "top" }}>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button
+                      onClick={() => nav(`/edit/${t.id}`)}
+                      className="btn ghost"
+                    >
+                      Editar
+                    </button>
+
+                    <button
+                      onClick={() => handleDelete(t.id)}
+                      style={deleteBtnStyle}
+                      title="Deletar tarefa"
+                    >
+                      Deletar
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+
+            {filtered().length === 0 && (
+              <tr>
+                <td colSpan={6} style={{ padding: 30, textAlign: "center", color: "#6b7280" }}>
+                  Nenhuma tarefa encontrada.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
-
-      {filtered.map(t => (
-        <div className="row-box" key={t.id}>
-          <div>{t.id}</div>
-
-          <div>
-            <Link to={`/details/${t.id}`} state={{ fromHome: true }}>
-              {t.title}
-            </Link>
-          </div>
-
-          <div>{t.responsible}</div>
-          <div>{t.status}</div>
-
-          <div>
-            <div className="small-muted">
-              {formatDate(t.createdAt)}
-              {t.concludedAt ? ` • ${formatDate(t.concludedAt)}` : ''}
-            </div>
-          </div>
-
-          <div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => nav(`/edit/${t.id}`)} className="btn ghost">Editar</button>
-              <button onClick={() => handleDelete(t.id)} className="btn-delete">Deletar</button>
-            </div>
-          </div>
-        </div>
-      ))}
-
-      {filtered.length === 0 && (
-        <div style={{ marginTop: 18, color: 'var(--muted)' }}>
-          Nenhuma tarefa encontrada.
-        </div>
-      )}
     </div>
-  )
-}
-
-function formatDate(d) {
-  if (!d) return '-'
-  return new Date(d).toLocaleDateString()
+  );
 }

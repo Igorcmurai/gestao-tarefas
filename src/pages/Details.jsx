@@ -8,7 +8,6 @@ export default function Details() {
 
   const task = getTask(id)
   if (!task) {
-    // redireciona para home se não existir
     setTimeout(() => nav('/'), 10)
     return null
   }
@@ -40,9 +39,22 @@ export default function Details() {
       <div className="detail-row">
         <div className="detail-label">Datas:</div>
         <div className="detail-content">
-          {formatDate(task.createdAt)}
-          {task.concludedAt ? ' — ' + formatDate(task.concludedAt) : ''}
+          Criada em: {formatDate(task.createdAt)}  
+          {task.concludedAt && (
+            <div>Concluída em: {formatDate(task.concludedAt)}</div>
+          )}
         </div>
+      </div>
+
+      {/* NOVO TEXTO */}
+      <div style={{
+        marginTop: "16px",
+        paddingTop: "12px",
+        borderTop: "1px solid #e5e7eb",
+        color: "#6b7280",
+        fontSize: "13px"
+      }}>
+        Última atualização: {formatDateTime(task.updatedAt)}
       </div>
 
       <div className="actions" style={{ marginTop: 14 }}>
@@ -69,4 +81,10 @@ export default function Details() {
 function formatDate(d) {
   if (!d) return '-'
   return new Date(d).toLocaleDateString()
+}
+
+function formatDateTime(d) {
+  if (!d) return '-'
+  const date = new Date(d)
+  return date.toLocaleDateString() + " " + date.toLocaleTimeString()
 }

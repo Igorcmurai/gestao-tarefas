@@ -1,91 +1,85 @@
-// serviço simples usando localStorage
-const KEY_TASKS = 'tasks_db_v1'
-const KEY_USER = 'app_user_v1'
+const KEY = "gestao_tarefas_lista";
+const USER_KEY = "gestao_tarefas_user";
 
-function readTasks() {
-  const raw = localStorage.getItem(KEY_TASKS)
-  return raw ? JSON.parse(raw) : []
-}
-function writeTasks(tasks) {
-  localStorage.setItem(KEY_TASKS, JSON.stringify(tasks))
-}
-
-export function listTasks() {
-  return readTasks()
-}
-
-export function addTask(task) {
-  const tasks = readTasks()
-  const id = tasks.length ? Math.max(...tasks.map(t => t.id)) + 1 : 1
-  const newTask = {
-    ...task,
-    id,
-    createdAt: new Date().toISOString(),
-    concludedAt: task.concludedAt || null
+function load() {
+  const data = localStorage.getItem(KEY);
+  if (!data) return [];
+  try {
+    return JSON.parse(data);
+  } catch {
+    return [];
   }
-  tasks.push(newTask)
-  writeTasks(tasks)
-  return id
+}
+
+function save(list) {
+  localStorage.setItem(KEY, JSON.stringify(list));
+}
+
+export function getTasks() {
+  return load();
 }
 
 export function getTask(id) {
-  const tasks = readTasks()
-  return tasks.find(t => Number(t.id) === Number(id)) || null
+  return load().find((t) => t.id === Number(id));
 }
 
-export function updateTask(id, patch) {
-  const tasks = readTasks()
-  const idx = tasks.findIndex(t => Number(t.id) === Number(id))
-  if (idx === -1) return false
-  tasks[idx] = { ...tasks[idx], ...patch }
+export function addTask(newTask) {
+  const list = load();
+  const id = list.length > 0 ? list[list.length - 1].id + 1 : 1;
 
-  if (tasks[idx].status === 'Finalizado' && !tasks[idx].concludedAt) {
-    tasks[idx].concludedAt = new Date().toISOString()
-  } else if (patch.hasOwnProperty('concludedAt')) {
-    tasks[idx].concludedAt = patch.concludedAt || null
-  } else if (tasks[idx].status !== 'Finalizado') {
-    tasks[idx].concludedAt = null
-  }
+  const now = new Date().toISOString();
 
-  writeTasks(tasks)
-  return true
+  const task = {
+    ...newTask,
+    id,
+    createdAt: now,
+    updatedAt: now
+  };
+
+  list.push(task);
+  save(list);
+  return task;
+}
+
+export function updateTask(id, updated) {
+  const list = load();
+  const idx = list.findIndex((t) => t.id === Number(id));
+  if (idx === -1) return;
+
+  const now = new Date().toISOString();
+
+  list[idx] = {
+    ...list[idx],
+    ...updated,
+    updatedAt: now
+  };
+
+  save(list);
 }
 
 export function removeTask(id) {
-  let tasks = readTasks()
-  tasks = tasks.filter(t => Number(t.id) !== Number(id))
-  writeTasks(tasks)
+  const list = load().filter((t) => t.id !== Number(id));
+  save(list);
 }
 
-export function seedSampleIfEmpty() {
-  const tasks = readTasks()
-  if (tasks.length === 0) {
-    const now = new Date().toISOString()
-    writeTasks([
-      { id:1, title:'Comprar pão', description:'Ir na padaria', responsible:'Igor', status:'Pendente', createdAt: now, concludedAt: null },
-      { id:2, title:'Separar ferramentas', description:'Organizar caixinha', responsible:'Gustavo', status:'Em andamento', createdAt: now, concludedAt: null },
-      { id:3, title:'Organizar o quarto', description:'Arrumar gavetas', responsible:'Kleber', status:'Finalizado', createdAt: now, concludedAt: now }
-    ])
-  }
+const USERS = [
+  { user: "igorcmurai", pass: "igor123", name: "Igor C. Murai" },
+  { user: "gustavocmurai", pass: "gustavo123", name: "Gustavo C. Murai" }
+];
+
+export function authenticate(user, pass) {
+  const found = USERS.find((u) => u.user === user && u.pass === pass);
+  return found ? found.name : null;
 }
 
-/* Autenticação simples com usuários fixos */
-const users = [
-  { user: 'igorcmurai', pass: 'igor123', name: 'Igor' },
-  { user: 'gustavocmurai', pass: 'gustavo123', name: 'Gustavo' }
-]
-
-export function authenticate(username, password) {
-  const u = users.find(x => x.user === username && x.pass === password)
-  return u ? u.name : null
+export function login(name) {
+  localStorage.setItem(USER_KEY, name);
 }
 
-export function login(userName) {
-  localStorage.setItem(KEY_USER, userName)
-}
 export function logout() {
-  localStorage.removeItem(KEY_USER)
+  localStorage.removeItem(USER_KEY);
 }
+
 export function getUser() {
-  return localStorage.getItem(KEY_USER)
+  return localStorage.getItem(USER_KEY);
 }
